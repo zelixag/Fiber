@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    #box{
+      padding: 20px;
+      background: palegoldenrod;
+    }
+  </style>
+</head>
+<body>
+  <div id="box"></div>
+  <button id="btn1">执行计算任务</button>
+  <button id="btn2">更改背景颜色</button>
+  <script>
+    var box = document.getElementById("box")
+    var btn1 = document.getElementById("btn1")
+    var btn2 = document.getElementById("btn2")
+
+    var number = 99999
+    var value = 0
+
+    // function calc() {
+    //   while (number > 0) {
+    //     value = Math.random() < 0.5 ? Math.random() : Math.random();
+    //     console.log(value)
+    //     number--
+    //   }
+    // }
+
+    function calc(deadline) {
+      // 当空闲时间大于1ms的时候执行该循环
+      while (number > 0 && deadline.timeRemaining() > 1) {
+        value = Math.random() < 0.5 ? Math.random() : Math.random();
+        console.log(value)
+        number--
+      }
+      // 如果高级任务执行，循环被终止，我们等高级任务被执行完，应该再次调用requestIdleCallback(calc)执行循环
+      requestIdleCallback(calc)
+    }
+    btn1.onclick = function () {
+      // calc()
+      requestIdleCallback(calc)
+    }
+    btn2.onclick = function () {
+      box.style.background = "green"
+    }
+  </script>
+</body>
+</html>
