@@ -1,11 +1,92 @@
-import { createTaskQueue } from '../Misc'
+import { arrified, createTaskQueue, createStateNode, getTag } from '../Misc'
 
 const taskQueue = createTaskQueue();
-const subTask = null
+let subTask = null
 
-const getFirstTask = () => {}
+// 等待被提交
+let pendingCommit = null
 
-const executeTask = fiber => {}
+const commitAllWork = fiber => {
+  fiber.effects.forEach((item) => {
+    if(item.effectTag === "placement") {
+      item.parent.stateNode.appendChild(item.stateNode)
+    }
+  })
+}
+const getFirstTask = () => {
+  /**
+   * 从任务队列中获取任务
+   */
+  const task = taskQueue.pop()
+  /**
+   * 返回最外层节点的fiber对象
+   */
+  return {
+    props: task.props,
+    stateNode: task.dom,
+    tag: "host_root",
+    effects: [],
+    child: null
+  }
+}
+const reconcileChildren = (fiber, children) => {
+  /**
+   * children 可能是对象，也有可能是数组
+   * 将children转换成数组
+   */
+  const arrifiedChildren = arrified(children);
+  let index = 0;
+  let numberOfElements = arrifiedChildren.length;
+  let element = null;
+  let newFiber = null;
+  let prevFiber = null
+
+  while(index < numberOfElements) {
+    element = arrifiedChildren[index];
+    newFiber = {
+      type: element.type,
+      props: element.props,
+      tag: getTag(element),
+      effects: [],
+      effectTag: "placement",
+      stateNode: null,
+      parent: fiber
+    }
+
+    newFiber.stateNode = createStateNode(newFiber)
+
+    console.log(newFiber)
+
+    if(index === 0) {
+      fiber.child = newFiber;
+    } else {
+      prevFiber.sibling = newFiber
+    }
+
+    prevFiber = newFiber;
+    index++
+  }
+}
+const executeTask = fiber => {
+  reconcileChildren(fiber, fiber.props.children)
+  if(fiber.child) {
+    return fiber.child
+  }
+
+  let currentExecutedFiber = fiber
+  while(currentExecutedFiber.parent) {
+    // 有同级返回同级
+    currentExecutedFiber.parent.effects = currentExecutedFiber.parent.effects.concat(
+      currentExecutedFiber.effects.concat([currentExecutedFiber])
+    )
+    if(currentExecutedFiber.sibling){
+      return currentExecutedFiber.sibling
+    }
+    // 退到父级
+    currentExecutedFiber = currentExecutedFiber.parent
+  }
+  pendingCommit = currentExecutedFiber
+}
 
 const workLoop = deadline => {
   if(!subTask) {
@@ -30,6 +111,10 @@ const performTask = deadline => {
   if(subTask || !taskQueue.isEmpty) {
     requestIdleCallback(performTask)
   }
+
+  if(pendingCommit){
+    commitAllWork(pendingCommit)
+  }
 }
 
 export const render = (element, dom) => {
@@ -48,8 +133,6 @@ export const render = (element, dom) => {
    dom,
    props: {children: element}
  })
-
- console.log(taskQueue.pop())
  // performTask 执行任务的意思
  /**
   * 指定在浏览器空闲的时间去执行任务
