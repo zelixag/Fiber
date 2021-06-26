@@ -1,5 +1,5 @@
 import { updateNodeElement } from "../DOM";
-import { arrified, createTaskQueue, createStateNode, getTag } from "../Misc";
+import { arrified, createTaskQueue, createStateNode, getTag, getRoot } from "../Misc";
 
 const taskQueue = createTaskQueue();
 let subTask = null;
@@ -9,18 +9,11 @@ let pendingCommit = null;
 
 const commitAllWork = (fiber) => {
   fiber.effects.forEach((item) => {
-    if (item.effectTag === "placement") {
-      let fiber = item;
-      let parentFiber = item.parent;
-      while (
-        parentFiber.tag === "class_component" ||
-        parentFiber.tag === "function_component"
-      ) {
-        parentFiber = parentFiber.parent;
-      }
-      if (fiber.tag === "host_component") {
-        parentFiber.stateNode.appendChild(item.stateNode);
-      }
+    if(item.tag === "class_component") {
+      item.stateNode.__fiber = item
+    }
+    if(item.effectTag === "delete") {
+      item.parent.stateNode.removeChild(item.stateNode)
     } else if(item.effectTag === "update") {
       /**
        * 更新
@@ -36,17 +29,42 @@ const commitAllWork = (fiber) => {
          */
         item.parent.stateNode.replaceChild(item.stateNode, item.alternate.stateNode)
       }
+    } else if (item.effectTag === "placement") {
+      let fiber = item;
+      let parentFiber = item.parent;
+      while (
+        parentFiber.tag === "class_component" ||
+        parentFiber.tag === "function_component"
+      ) {
+        parentFiber = parentFiber.parent;
+      }
+      if (fiber.tag === "host_component") {
+        parentFiber.stateNode.appendChild(item.stateNode);
+      }
     }
-    /***
-     * 备份旧的fiber节点对象***/
-    fiber.stateNode.__rootFiberContainer = fiber;
   });
+  /***
+   * 备份旧的fiber节点对象***/
+  fiber.stateNode.__rootFiberContainer = fiber;
 };
 const getFirstTask = () => {
   /**
    * 从任务队列中获取任务
    */
   const task = taskQueue.pop();
+
+  if(task.from === "class_component") {
+    const root = getRoot(task.instance)
+    task.instance.__fiber.partialState = task.partialState
+    return {
+      props: root.props,
+      stateNode: root.stateNode,
+      tag: "host_root",
+      effects: [],
+      child: null,
+      alternate: root
+    }
+  }
   /**
    * 返回最外层节点的fiber对象
    */
@@ -76,8 +94,16 @@ const reconcileChildren = (fiber, children) => {
     alternate = fiber.alternate.child;
   }
 
-  while (index < numberOfElements) {
+  while (index < numberOfElements || alternate) {
     element = arrifiedChildren[index];
+
+    if(!element && alternate){
+      /**
+       * 删除操作
+       */
+      alternate.effectTag = "delete"
+      fiber.effects.push(alternate);
+    }
     if (element && alternate) {
       /**
        * 更新
@@ -103,8 +129,6 @@ const reconcileChildren = (fiber, children) => {
          */
         newFiber.stateNode = createStateNode(newFiber);
       }
-
-      newFiber.stateNode = createStateNode(newFiber);
     } else if (element && !alternate) {
       /**
        * 初始化渲染
@@ -124,7 +148,7 @@ const reconcileChildren = (fiber, children) => {
 
     if (index === 0) {
       fiber.child = newFiber;
-    } else {
+    } else if(element){
       prevFiber.sibling = newFiber;
     }
     if (alternate && alternate.sibling) {
@@ -138,6 +162,12 @@ const reconcileChildren = (fiber, children) => {
 };
 const executeTask = (fiber) => {
   if (fiber.tag === "class_component") {
+    if(fiber.stateNode.__fiber && fiber.stateNode.__fiber.partialState) {
+      fiber.stateNode.state = {
+        ...fiber.stateNode.state,
+        ...fiber.stateNode.__fiber.partialState
+      }
+    }
     reconcileChildren(fiber, fiber.stateNode.render());
   } else if (fiber.tag === "function_component") {
     reconcileChildren(fiber, fiber.stateNode(fiber.props));
@@ -216,3 +246,12 @@ export const render = (element, dom) => {
    */
   requestIdleCallback(performTask);
 };
+
+export const scheduleUpdate = (instance, partialState) => {
+  taskQueue.push({
+    from: "class_component",
+    instance,
+    partialState
+  })
+  requestIdleCallback(performTask)
+}

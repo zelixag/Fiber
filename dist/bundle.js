@@ -12,13 +12,30 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "Component": () => (/* binding */ Component)
 /* harmony export */ });
+/* harmony import */ var _reconciliation__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../reconciliation */ "./src/react/reconciliation/index.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Component = function Component(props) {
-  _classCallCheck(this, Component);
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-  this.props = props;
-};
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+
+var Component = /*#__PURE__*/function () {
+  function Component(props) {
+    _classCallCheck(this, Component);
+
+    this.props = props;
+  }
+
+  _createClass(Component, [{
+    key: "setState",
+    value: function setState(partialState) {
+      (0,_reconciliation__WEBPACK_IMPORTED_MODULE_0__.scheduleUpdate)(this, partialState);
+    }
+  }]);
+
+  return Component;
+}();
 
 /***/ }),
 
@@ -87,7 +104,13 @@ function updateNodeElement(newElement, virtualDOM) {
 
   if (virtualDOM.type === "text") {
     if (newProps.textContent !== oldProps.textContent) {
-      virtualDOM.parent.stateNode.replaceChild(document.createTextNode(newProps.textContent), oldVirtualDOM.stateNode);
+      console.log(oldVirtualDOM.stateNode);
+
+      if (virtualDOM.parent.type !== oldVirtualDOM.parent.type) {
+        virtualDOM.parent.stateNode.appendChild(document.createTextNode(newProps.textContent));
+      } else {
+        virtualDOM.parent.stateNode.replaceChild(document.createTextNode(newProps.textContent), oldVirtualDOM.stateNode);
+      }
     }
 
     return;
@@ -249,6 +272,30 @@ var createReactInstance = function createReactInstance(fiber) {
 
 /***/ }),
 
+/***/ "./src/react/Misc/getRoot/index.js":
+/*!*****************************************!*\
+  !*** ./src/react/Misc/getRoot/index.js ***!
+  \*****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+var getRoot = function getRoot(instance) {
+  var fiber = instance.__fiber;
+
+  while (fiber.parent) {
+    fiber = fiber.parent;
+  }
+
+  return fiber;
+};
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (getRoot);
+
+/***/ }),
+
 /***/ "./src/react/Misc/getTag/index.js":
 /*!****************************************!*\
   !*** ./src/react/Misc/getTag/index.js ***!
@@ -287,12 +334,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "createTaskQueue": () => (/* reexport safe */ _CreateTaskQueue__WEBPACK_IMPORTED_MODULE_0__.default),
 /* harmony export */   "arrified": () => (/* reexport safe */ _Arrified__WEBPACK_IMPORTED_MODULE_1__.default),
 /* harmony export */   "createStateNode": () => (/* reexport safe */ _CreateStateNode__WEBPACK_IMPORTED_MODULE_2__.default),
-/* harmony export */   "getTag": () => (/* reexport safe */ _getTag__WEBPACK_IMPORTED_MODULE_3__.default)
+/* harmony export */   "getTag": () => (/* reexport safe */ _getTag__WEBPACK_IMPORTED_MODULE_3__.default),
+/* harmony export */   "getRoot": () => (/* reexport safe */ _getRoot__WEBPACK_IMPORTED_MODULE_4__.default)
 /* harmony export */ });
 /* harmony import */ var _CreateTaskQueue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./CreateTaskQueue */ "./src/react/Misc/CreateTaskQueue/index.js");
 /* harmony import */ var _Arrified__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Arrified */ "./src/react/Misc/Arrified/index.js");
 /* harmony import */ var _CreateStateNode__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./CreateStateNode */ "./src/react/Misc/CreateStateNode/index.js");
 /* harmony import */ var _getTag__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./getTag */ "./src/react/Misc/getTag/index.js");
+/* harmony import */ var _getRoot__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./getRoot */ "./src/react/Misc/getRoot/index.js");
+
 
 
 
@@ -373,10 +423,17 @@ __webpack_require__.r(__webpack_exports__);
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "render": () => (/* binding */ render)
+/* harmony export */   "render": () => (/* binding */ render),
+/* harmony export */   "scheduleUpdate": () => (/* binding */ scheduleUpdate)
 /* harmony export */ });
 /* harmony import */ var _DOM__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../DOM */ "./src/react/DOM/index.js");
 /* harmony import */ var _Misc__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Misc */ "./src/react/Misc/index.js");
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) { symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); } keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 
 
 var taskQueue = (0,_Misc__WEBPACK_IMPORTED_MODULE_1__.createTaskQueue)();
@@ -386,17 +443,12 @@ var pendingCommit = null;
 
 var commitAllWork = function commitAllWork(fiber) {
   fiber.effects.forEach(function (item) {
-    if (item.effectTag === "placement") {
-      var _fiber = item;
-      var parentFiber = item.parent;
+    if (item.tag === "class_component") {
+      item.stateNode.__fiber = item;
+    }
 
-      while (parentFiber.tag === "class_component" || parentFiber.tag === "function_component") {
-        parentFiber = parentFiber.parent;
-      }
-
-      if (_fiber.tag === "host_component") {
-        parentFiber.stateNode.appendChild(item.stateNode);
-      }
+    if (item.effectTag === "delete") {
+      item.parent.stateNode.removeChild(item.stateNode);
     } else if (item.effectTag === "update") {
       /**
        * 更新
@@ -412,13 +464,23 @@ var commitAllWork = function commitAllWork(fiber) {
          */
         item.parent.stateNode.replaceChild(item.stateNode, item.alternate.stateNode);
       }
+    } else if (item.effectTag === "placement") {
+      var _fiber = item;
+      var parentFiber = item.parent;
+
+      while (parentFiber.tag === "class_component" || parentFiber.tag === "function_component") {
+        parentFiber = parentFiber.parent;
+      }
+
+      if (_fiber.tag === "host_component") {
+        parentFiber.stateNode.appendChild(item.stateNode);
+      }
     }
-    /***
-     * 备份旧的fiber节点对象***/
-
-
-    fiber.stateNode.__rootFiberContainer = fiber;
   });
+  /***
+   * 备份旧的fiber节点对象***/
+
+  fiber.stateNode.__rootFiberContainer = fiber;
 };
 
 var getFirstTask = function getFirstTask() {
@@ -426,9 +488,23 @@ var getFirstTask = function getFirstTask() {
    * 从任务队列中获取任务
    */
   var task = taskQueue.pop();
+
+  if (task.from === "class_component") {
+    var root = (0,_Misc__WEBPACK_IMPORTED_MODULE_1__.getRoot)(task.instance);
+    task.instance.__fiber.partialState = task.partialState;
+    return {
+      props: root.props,
+      stateNode: root.stateNode,
+      tag: "host_root",
+      effects: [],
+      child: null,
+      alternate: root
+    };
+  }
   /**
    * 返回最外层节点的fiber对象
    */
+
 
   return {
     props: task.props,
@@ -457,8 +533,16 @@ var reconcileChildren = function reconcileChildren(fiber, children) {
     alternate = fiber.alternate.child;
   }
 
-  while (index < numberOfElements) {
+  while (index < numberOfElements || alternate) {
     element = arrifiedChildren[index];
+
+    if (!element && alternate) {
+      /**
+       * 删除操作
+       */
+      alternate.effectTag = "delete";
+      fiber.effects.push(alternate);
+    }
 
     if (element && alternate) {
       /**
@@ -486,8 +570,6 @@ var reconcileChildren = function reconcileChildren(fiber, children) {
          */
         newFiber.stateNode = (0,_Misc__WEBPACK_IMPORTED_MODULE_1__.createStateNode)(newFiber);
       }
-
-      newFiber.stateNode = (0,_Misc__WEBPACK_IMPORTED_MODULE_1__.createStateNode)(newFiber);
     } else if (element && !alternate) {
       /**
        * 初始化渲染
@@ -506,7 +588,7 @@ var reconcileChildren = function reconcileChildren(fiber, children) {
 
     if (index === 0) {
       fiber.child = newFiber;
-    } else {
+    } else if (element) {
       prevFiber.sibling = newFiber;
     }
 
@@ -523,6 +605,10 @@ var reconcileChildren = function reconcileChildren(fiber, children) {
 
 var executeTask = function executeTask(fiber) {
   if (fiber.tag === "class_component") {
+    if (fiber.stateNode.__fiber && fiber.stateNode.__fiber.partialState) {
+      fiber.stateNode.state = _objectSpread(_objectSpread({}, fiber.stateNode.state), fiber.stateNode.__fiber.partialState);
+    }
+
     reconcileChildren(fiber, fiber.stateNode.render());
   } else if (fiber.tag === "function_component") {
     reconcileChildren(fiber, fiber.stateNode(fiber.props));
@@ -607,6 +693,14 @@ var render = function render(element, dom) {
 
   requestIdleCallback(performTask);
 };
+var scheduleUpdate = function scheduleUpdate(instance, partialState) {
+  taskQueue.push({
+    from: "class_component",
+    instance: instance,
+    partialState: partialState
+  });
+  requestIdleCallback(performTask);
+};
 
 /***/ })
 
@@ -674,23 +768,79 @@ var __webpack_exports__ = {};
   \**********************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./react */ "./src/react/index.js");
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-var root = document.getElementById("root");
-var jsx = /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__.default.createElement("div", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__.default.createElement("p", null, "Hello React"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__.default.createElement("p", null, "Hello FIber"));
-(0,_react__WEBPACK_IMPORTED_MODULE_0__.render)(jsx, root);
-setTimeout(function () {
-  var jsx = /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__.default.createElement("div", null, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__.default.createElement("p", null, "\u5965\u5229\u7ED9"), /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__.default.createElement("p", null, "Hello FIber"));
-  (0,_react__WEBPACK_IMPORTED_MODULE_0__.render)(jsx, root);
-}, 2000); // class Creating extends Component {
-//   constructor(props) {
-//     super(props)
-//   }
-//   render() {
-//     return <div>{this.props.title}hahhahaha</div>
-//   }
-// }
-// render(<Creating title={"hello"}/>, root)
-// function FnComponent(props) {
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+
+var root = document.getElementById("root"); // const jsx = (<div>
+//   <p>Hello React</p>
+//   <p>Hello FIber</p>
+// </div>)
+// render(jsx, root)
+// setTimeout(() => {
+//   const jsx = (<div>
+//     <p>Hello FIber</p>
+//   </div>)
+//   render(jsx, root)
+// }, 2000);
+
+var Creating = /*#__PURE__*/function (_Component) {
+  _inherits(Creating, _Component);
+
+  var _super = _createSuper(Creating);
+
+  function Creating(props) {
+    var _this;
+
+    _classCallCheck(this, Creating);
+
+    _this = _super.call(this, props);
+    _this.state = {
+      name: '张三'
+    };
+    return _this;
+  }
+
+  _createClass(Creating, [{
+    key: "render",
+    value: function render() {
+      var _this2 = this;
+
+      return /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__.default.createElement("div", null, this.props.title, "hahhahaha", this.state.name, /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__.default.createElement("button", {
+        onClick: function onClick() {
+          return _this2.setState({
+            name: "李四"
+          });
+        }
+      }, "button"));
+    }
+  }]);
+
+  return Creating;
+}(_react__WEBPACK_IMPORTED_MODULE_0__.Component);
+
+(0,_react__WEBPACK_IMPORTED_MODULE_0__.render)( /*#__PURE__*/_react__WEBPACK_IMPORTED_MODULE_0__.default.createElement(Creating, {
+  title: "hello"
+}), root); // function FnComponent(props) {
 //   return <div>{props.title}FnComponent</div>
 // }
 // render(<FnComponent title={"hello"}/>, root)

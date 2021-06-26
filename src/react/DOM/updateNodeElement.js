@@ -9,10 +9,15 @@ export default function updateNodeElement(
 
   if(virtualDOM.type === "text") {
     if(newProps.textContent !== oldProps.textContent) {
-      virtualDOM.parent.stateNode.replaceChild(
-        document.createTextNode(newProps.textContent),
-        oldVirtualDOM.stateNode
-      )
+      console.log(oldVirtualDOM.stateNode)
+      if(virtualDOM.parent.type !== oldVirtualDOM.parent.type) {
+        virtualDOM.parent.stateNode.appendChild(document.createTextNode(newProps.textContent))
+      } else {
+        virtualDOM.parent.stateNode.replaceChild(
+          document.createTextNode(newProps.textContent),
+          oldVirtualDOM.stateNode
+        )
+      }
     }
     return
   }
